@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"deployment.kubernetes.io/revision":"1"},"creationTimestamp":"2022-03-17T10:56:10Z","generation":4,"labels":{"app":"deno-webserver"},"name":"deno-webserver","namespace":"default","resourceVersion":"5875","uid":"51f4e94b-e825-4c41-a956-b1c395850d6e"},"spec":{"progressDeadlineSeconds":600,"replicas":3,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"deno-webserver"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"deno-webserver"}},"spec":{"containers":[{"image":"codebuds/deno-webserver:1.0.0","imagePullPolicy":"IfNotPresent","name":"deno-webserver","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30}}},"status":{"availableReplicas":1,"conditions":[{"lastTransitionTime":"2022-03-17T10:56:10Z","lastUpdateTime":"2022-03-17T10:56:30Z","message":"ReplicaSet \"deno-webserver-bbc59c799\" has successfully progressed.","reason":"NewReplicaSetAvailable","status":"True","type":"Progressing"},{"lastTransitionTime":"2022-03-17T11:26:02Z","lastUpdateTime":"2022-03-17T11:26:02Z","message":"Deployment has minimum availability.","reason":"MinimumReplicasAvailable","status":"True","type":"Available"}],"observedGeneration":4,"readyReplicas":1,"replicas":1,"updatedReplicas":1}}
+  labels:
+    app: deno-webserver
+  name: deno-webserver
+  namespace: default
+spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ .Values.server.replicaCount }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: deno-webserver
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: deno-webserver
+    spec:
+      containers:
+      - image: {{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}
+        imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+        name: deno-webserver
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+            - mountPath: {{ .Values.server.volumes.mountPath }}
+              name: {{ .Values.server.volumes.name }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+          - name: {{ .Values.server.volumes.name }}
+            persistentVolumeClaim:
+                 claimName: {{ .Values.server.PVC.name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.server.service.name }}
+  namespace: default
+spec:
+  ports:
+    - protocol: {{ .Values.server.service.ports.protocol }}
+      port: {{ .Values.server.service.ports.port }}
+      targetPort: {{ .Values.server.service.ports.targetPort }}
+  selector:
+    app: deno-webserver
+  type: {{ .Values.server.service.type }}
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  allocateLoadBalancerNodePorts: true
+  internalTrafficPolicy: Cluster
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: {{ .Values.server.PV.name }}
+spec:
+    accessModes:
+        - ReadWriteOnce
+    persistentVolumeReclaimPolicy: {{ .Values.server.PV.reclaimPolicy }}
+    storageClassName: standard
+    capacity:
+        storage: {{ .Values.server.PV.size }}
+    hostPath:
+        path: {{ .Values.server.PV.path }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: {{ .Values.server.PVC.name }}
+    namespace: default
+spec:
+    volumeName: {{ .Values.server.PV.name }}
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+            storage: {{ .Values.server.PVC.size }}

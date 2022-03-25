@@ -1,0 +1,63 @@
+#Mettre (true ou false)
+ingress:
+  enable: true
+
+server:
+  replicaCount: 2
+
+  image:
+    repository: codebuds/deno-webserver
+    pullPolicy: IfNotPresent
+    tag: 1.3.0
+
+  volumes:
+    name: logs
+    mountPath: /srv/app/pvc
+
+  PV:
+    name: pv-deno-server
+    size: 3Gi
+    path: /data/deno-server/
+    reclaimPolicy: Retain    
+
+  PVC:
+    name: logs
+    size: 1Gi
+
+  service:
+    name: service-deno-webserver
+    type: LoadBalancer
+    ports:
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+
+mariadb:
+  database: logs
+  root_password: root
+  user:
+    login: user
+    password: password
+
+  image:
+    repository: mariadb
+    pullPolicy: Always
+    tag: 10.7
+
+  volumes:
+    name: maria-db
+    mountPath: /var/lib/mysql
+
+  PV:
+    name: pv-maria-db
+    size: 10Gi
+    path: /data/maria-db/
+    reclaimPolicy: Retain
+
+  PVC:
+    name: maria-db
+    size: 1Gi
+
+  service:
+    name: maria-db
+    port: 3306
