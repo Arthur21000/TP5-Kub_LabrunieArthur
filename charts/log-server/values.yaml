@@ -34,7 +34,7 @@ server:
 
 mariadb:
   database: logs
-  root_password: root
+  root_password: asecret
   user:
     login: user
     password: password
