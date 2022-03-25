@@ -1,0 +1,9 @@
+1. Pour accéder à l'URL de l'application :
+{{- if .Values.ingress.enable }}
+Lance la commande suivante afin de pouvoir accéder à l'URL suivante http://deno.minikube/ :
+  - echo "$(minikube ip) deno.minikube" | sudo tee -a /etc/hosts
+{{- else }}
+Lances les commandes suivantes et récupère l'EXTERNAL IP du service {{ .Values.server.service.name}} :
+  - minikube tunnel > /dev/null&
+  - kubectl get service
+{{- end }}
