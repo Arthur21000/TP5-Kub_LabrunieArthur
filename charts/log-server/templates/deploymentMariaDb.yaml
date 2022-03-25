@@ -19,7 +19,7 @@ spec:
           name: {{ .Release.Name }}-maria-db
           resources: {}
           env:
-            - name: MYSL_USER
+            - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-mariadb-secret
@@ -43,7 +43,7 @@ spec:
             - containerPort: 3306
               name: mysql
           volumeMounts:
-            - name: {{ .Release.Name }}-{{ .Values.mariadb.volumes.name }}
+            - name: {{ .Values.mariadb.volumes.name }}
               mountPath: {{ .Values.mariadb.volumes.mountPath }}
  
       dnsPolicy: ClusterFirst
@@ -52,7 +52,7 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-        - name: {{ .Release.Name }}-{{ .Values.mariadb.volumes.name }}
+        - name: {{ .Values.mariadb.volumes.name }}
           persistentVolumeClaim:
             claimName: {{ .Release.Name }}-{{ .Values.mariadb.PVC.name }}
  

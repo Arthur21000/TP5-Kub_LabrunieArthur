@@ -31,6 +31,9 @@ spec:
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
+        env:
+          - name: MARIADB_HOST
+            value: {{ .Release.Name }}-{{ .Values.mariadb.service.name }}
         volumeMounts:
             - mountPath: {{ .Values.server.volumes.mountPath }}
               name: {{ .Release.Name }}-{{ .Values.server.volumes.name }}
@@ -59,12 +62,6 @@ spec:
   selector:
     app: deno-webserver
   type: {{ .Values.server.service.type }}
-  externalTrafficPolicy: Cluster
-  ipFamilies:
-    - IPv4
-  ipFamilyPolicy: SingleStack
-  allocateLoadBalancerNodePorts: true
-  internalTrafficPolicy: Cluster
 
 ---
 
