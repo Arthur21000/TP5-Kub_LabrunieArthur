@@ -1,43 +1,44 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: maria-db
+  name: {{ .Release.Name }}-maria-db
   namespace: default
 spec:
+  serviceName: {{ .Release.Name }}-mariadb
   replicas: 1
   selector:
     matchLabels:
-      app: maria-db
+      app: {{ .Release.Name }}-maria-db
   template:
     metadata:
       labels:
-        app: maria-db
+        app: {{ .Release.Name }}-maria-db
     spec:
       containers:
         - image: {{ .Values.mariadb.image.repository }}:{{ .Values.mariadb.image.tag }}
           imagePullPolicy: {{ .Values.mariadb.image.pullPolicy }}
-          name: maria-db
+          name: {{ .Release.Name }}-maria-db
           resources: {}
           env:
             - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: mariadb-secret
+                  name: {{ .Release.Name }}-mariadb-secret
                   key: user
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mariadb-secret
+                  name: {{ .Release.Name }}-mariadb-secret
                   key: userpassword
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mariadb-secret
+                  name: {{ .Release.Name }}-mariadb-secret
                   key: password
             - name: MYSQL_DATABASE
               valueFrom:
                 secretKeyRef:
-                  name: mariadb-secret
+                  name: {{ .Release.Name }}-mariadb-secret
                   key: db
           ports:
             - containerPort: 3306
@@ -54,14 +55,14 @@ spec:
       volumes:
         - name: {{ .Values.mariadb.volumes.name }}
           persistentVolumeClaim:
-            claimName: {{ .Values.mariadb.PVC.name }}
+            claimName: {{ .Release.Name }}-{{ .Values.mariadb.PVC.name }}
  
 ---
 
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: {{ .Values.mariadb.PV.name }}
+  name: {{ .Release.Name }}-{{ .Values.mariadb.PV.name }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -70,17 +71,17 @@ spec:
   capacity:
     storage: {{ .Values.mariadb.PV.size }}
   hostPath:
-    path: {{ .Values.mariadb.PV.path }}
+    path: {{ .Values.mariadb.PV.path }}/{{ .Release.Name }}
  
 ---
 
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.mariadb.PVC.name }}
+  name: {{ .Release.Name }}-{{ .Values.mariadb.PVC.name }}
   namespace: default
 spec:
-  volumeName: {{ .Values.mariadb.PV.name }}
+  volumeName: {{ .Release.Name }}-{{ .Values.mariadb.PV.name }}
   accessModes:
     - ReadWriteOnce
   resources:
@@ -92,9 +93,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.mariadb.service.name }}
+  name: {{ .Release.Name }}-{{ .Values.mariadb.service.name }}
 spec:
   ports:
     - port: {{ .Values.mariadb.service.port }}
   selector:
-    app: maria-db
+    app: {{ .Release.Name }}-maria-db
