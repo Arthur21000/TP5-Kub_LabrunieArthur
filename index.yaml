@@ -3,6 +3,16 @@ entries:
   deno-webserver:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2022-03-31T15:44:49.924826746Z"
+    description: A Helm chart for Kubernetes test
+    digest: 72f32578eb3916bb812e1a8f275b19ccc86cbc2112ebc3fa145fdcf5fa4d3f77
+    name: deno-webserver
+    type: application
+    urls:
+    - https://github.com/Arthur21000/TP5-Kub_LabrunieArthur/releases/download/deno-webserver-0.3.0/deno-webserver-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2022-03-28T14:05:12.920591668Z"
     description: A Helm chart for Kubernetes test
     digest: ce029fce9ba33e387c1047f3aa1b48bd23d1b8208bd0419751f426baa9224a82
@@ -31,4 +41,4 @@ entries:
     urls:
     - https://github.com/Arthur21000/TP5-Kub_LabrunieArthur/releases/download/deno-webserver-0.0.9/deno-webserver-0.0.9.tgz
     version: 0.0.9
-generated: "2022-03-28T14:05:12.920602868Z"
+generated: "2022-03-31T15:44:49.924841946Z"
