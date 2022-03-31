@@ -21,7 +21,7 @@ server:
 
   volumes:
     name: logs
-    mountPath: /srv/app/pvc
+    mountPath: /srv/app/shared-logs/
 
   PV:
     name: pv-deno-server
