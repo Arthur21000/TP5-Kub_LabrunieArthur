@@ -6,8 +6,8 @@ server:
   replicaCount: 2
 
   securityContext:
-    runAsUser: 1000
-    runAsGroup: 1000
+    runAsUser: 82
+    runAsGroup: 82
 
   liveness:
     initialDelaySeconds: 30
@@ -21,7 +21,7 @@ server:
 
   volumes:
     name: logs
-    mountPath: /srv/app/shared-logs/
+    mountPath: /srv/app/shared-logs
 
   PV:
     name: pv-deno-server
