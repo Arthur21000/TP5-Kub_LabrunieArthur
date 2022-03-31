@@ -18,6 +18,12 @@ spec:
         - image: {{ .Values.mariadb.image.repository }}:{{ .Values.mariadb.image.tag }}
           imagePullPolicy: {{ .Values.mariadb.image.pullPolicy }}
           name: {{ .Release.Name }}-maria-db
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.mariadb.readiness.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mariadb.readiness.periodSeconds }}
+            failureThreshold: {{ .Values.mariadb.readiness.failureThreshold }}
+            exec:
+              command: ["sh", "-c", "exec mysqladmin status -uroot -p$MYSQL_ROOT_PASSWORD"]
           resources: {}
           env:
             - name: MYSQL_USER
@@ -41,8 +47,8 @@ spec:
                   name: {{ .Release.Name }}-mariadb-secret
                   key: db
           ports:
-            - containerPort: 3306
-              name: mysql
+            - containerPort: {{ .Values.mariadb.service.port }}
+              name: {{ .Values.mariadb.service.name }}
           volumeMounts:
             - name: {{ .Values.mariadb.volumes.name }}
               mountPath: {{ .Values.mariadb.volumes.mountPath }}

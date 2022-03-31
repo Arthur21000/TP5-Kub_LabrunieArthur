@@ -5,10 +5,19 @@ ingress:
 server:
   replicaCount: 2
 
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 5
+
   image:
-    repository: codebuds/deno-webserver
+    repository:  codebuds/micro-symfony-webserver
     pullPolicy: IfNotPresent
-    tag: 1.5.0
+    tag: 0.1.3
 
   volumes:
     name: logs
@@ -29,12 +38,19 @@ server:
     type: ClusterIP
     ports:
       protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8000
+      targetPort: 8000
 
 mariadb:
   database: logs
+
   root_password: asecret
+  
+  readiness:
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    failureThreshold: 5
+
   user:
     login: user
     password: password

@@ -16,5 +16,5 @@ spec:
                         service:
                             name: {{ .Release.Name }}-{{ .Values.server.service.name }}
                             port:
-                                number: 8080
+                                number: {{ .Values.server.service.ports.port }}
 {{- end }}

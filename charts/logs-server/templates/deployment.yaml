@@ -24,16 +24,58 @@ spec:
       labels:
         app: {{ .Release.Name }}-deno-webserver
     spec:
+      initContainers:
+        - name: {{ .Release.Name }}-verification-bdd
+          image: busybox:1.31
+          command: [
+                  'sh', 
+                  '-c', 
+                  'echo -e "Verification du status de la BDD {{ .Release.Name }}-{{ .Values.mariadb.service.name }}"; while ! nc -z {{ .Release.Name }}-{{ .Values.mariadb.service.name }} {{ .Values.mariadb.service.port }}; do sleep 1; printf "-"; done; echo -e "  >> La BDD {{ .Release.Name }}-{{ .Values.mariadb.service.name }} est demarré";'
+                  ]
+        - name: {{ .Release.Name }}-droit-volume
+          image: busybox:1.31
+          volumeMounts:
+            - mountPath: {{ .Values.server.volumes.mountPath }}
+              name: {{ .Release.Name }}-{{ .Values.server.volumes.name }}
+          command: [
+                  'sh', 
+                  '-c',
+                  'chown -R {{ .Values.server.securityContext.runAsUser }}:{{ .Values.server.securityContext.runAsGroup }} {{ .Values.server.volumes.mountPath }}'
+                  ]
       containers:
       - image: {{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}
         imagePullPolicy: {{ .Values.server.image.pullPolicy }}
         name: {{ .Release.Name }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.server.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.server.liveness.periodSeconds }}
+          failureThreshold: {{ .Values.server.liveness.failureThreshold }}
+          httpGet:
+            path: /probe?probeType=liveness
+            port: {{ .Values.server.service.ports.port }}
         resources: {}
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         env:
+          - name: MARIA_USER
+            valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mariadb-secret
+                  key: user
+          - name: MARIA_PASSWORD
+            valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mariadb-secret
+                  key: userpassword
+          - name: MARIADB_NAME
+            valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-mariadb-secret
+                  key: db
           - name: MARIADB_HOST
             value: {{ .Release.Name }}-{{ .Values.mariadb.service.name }}
+          - name : DATABASE_URL
+            value : "mysql://$(MARIA_USER):$(MARIA_PASSWORD)@$(MARIADB_HOST)/$(MARIADB_NAME)?serverVersion={{ .Values.mariadb.image.tag }}"
         volumeMounts:
             - mountPath: {{ .Values.server.volumes.mountPath }}
               name: {{ .Release.Name }}-{{ .Values.server.volumes.name }}
